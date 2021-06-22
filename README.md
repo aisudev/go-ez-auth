@@ -1,2 +1,2 @@
 # EZ-GO Auth
-### run application: `go run auth/main.go && go run service/main.go`
+### run application: `cd auth && go run main.go && cd ../service && go run main.go`

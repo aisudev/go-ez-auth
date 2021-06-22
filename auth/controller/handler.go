@@ -2,6 +2,7 @@ package controller
 
 import (
 	"auth-api/domain"
+	"errors"
 	"fmt"
 	"time"
 
@@ -9,6 +10,15 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
+
+var jwtKey = []byte("secret")
+
+type Claims struct {
+	Username string
+	Password string
+	ExpireAt int64
+	jwt.StandardClaims
+}
 
 type UserHandler interface {
 	CreateUser(*domain.User) error
@@ -81,11 +91,51 @@ func (h *Handler) GetUser(username, password string) (map[string]interface{}, er
 }
 
 func (h *Handler) AccessUser(accessToken string) (map[string]interface{}, error) {
-	return nil, nil
+
+	if _, err := VerifyToken(accessToken); err != nil {
+		return map[string]interface{}{"isValid": false}, err
+	}
+
+	if !h.IsExist("access_token = ?", accessToken) {
+		return map[string]interface{}{"isValid": false}, errors.New("not valid.")
+	}
+
+	return map[string]interface{}{"isValid": true}, nil
 }
 
 func (h *Handler) RefreshUser(refreshToken string) (map[string]interface{}, error) {
-	return nil, nil
+
+	var claims *Claims
+	var err error
+
+	if claims, err = VerifyToken(refreshToken); err != nil {
+		return nil, err
+	}
+
+	if !h.IsExist("refresh_token = ?", refreshToken) {
+		return map[string]interface{}{"isValid": false}, errors.New("not valid.")
+	}
+
+	var accToken *string
+	if accToken, err = GenerateToken(claims.Username, claims.Password, time.Now().Add(time.Minute*5).Unix()); err != nil {
+		return nil, err
+	}
+
+	var rfToken *string
+	if rfToken, err = GenerateToken(claims.Username, claims.Password, time.Now().Add(time.Minute*15).Unix()); err != nil {
+		return nil, err
+	}
+
+	var user domain.User
+	if err = h.db.Model(&user).
+		Where("username = ?", claims.Username).
+		Updates(map[string]interface{}{"access_token": accToken, "refresh_token": rfToken}).
+		Error; err != nil {
+
+		return nil, err
+	}
+
+	return map[string]interface{}{"access_token": accToken, "refresh_token": rfToken}, nil
 }
 
 // *FUNCTION HASH
@@ -102,27 +152,57 @@ func ComparePassword(hashPassword, password string) error {
 
 // *FUNCTION JWT
 
-type Claims struct {
-	Username string
-	Password string
-	Expire   string
-	jwt.StandardClaims
-}
-
 func GenerateToken(username, password string, expire int64) (*string, error) {
 
 	token := jwt.New(jwt.SigningMethodHS384)
 
 	claims := token.Claims.(jwt.MapClaims)
-	claims["username"] = username
-	claims["password"] = password
-	claims["expire"] = expire
+	claims["Username"] = username
+	claims["Password"] = password
+	claims["ExpireAt"] = expire
 
-	tkn, err := token.SignedString([]byte("secret"))
+	tkn, err := token.SignedString(jwtKey)
 
 	if err != nil {
 		return nil, err
 	}
 
 	return &tkn, nil
+}
+
+func VerifyToken(token string) (*Claims, error) {
+
+	claims := &Claims{}
+	tkn, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) {
+		return jwtKey, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !tkn.Valid {
+		return nil, errors.New("token is not valid.")
+	}
+
+	subTime := claims.ExpireAt - time.Now().Unix()
+
+	if subTime <= 0 {
+		return nil, errors.New("permission denied.")
+	}
+
+	return claims, nil
+}
+
+// *DB
+func (h *Handler) IsExist(filter string, value interface{}) bool {
+
+	var user domain.User
+	count := int64(0)
+
+	if err := h.db.Model(&user).Where(filter, value).Count(&count).Error; err != nil {
+		return false
+	}
+
+	return count > 0
 }

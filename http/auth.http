@@ -5,3 +5,28 @@ Content-Type: application/json
     "username":"xmen",
     "password":"1234"
 }
+
+###
+POST http://localhost:9898/signin
+Content-Type: application/json
+
+{
+    "username":"xmen",
+    "password":"1234"
+}
+
+###
+POST http://localhost:9898/auth/access
+Content-Type: application/json
+
+{
+    "accessToken":"eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJFeHBpcmVBdCI6MTYyNDM1NDcxOCwiUGFzc3dvcmQiOiIkMmEkMDUkQmRYNG4zVDEySnlNd0hHSWo4Zlk4LjFabkdrZG9sYXZRekgxcnU0L1dCTFF6Nk9GNk85SksiLCJVc2VybmFtZSI6InhtZW4ifQ.luYN0Cmi9G4LyHMmPpYFNPbTgWybyqh_V9Oc-hkKP1_0VVN0Nx0R92DsEokCDsoU"
+}
+
+###
+POST http://localhost:9898/auth/refresh
+Content-Type: application/json
+
+{
+    "refreshToken":"eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJFeHBpcmVBdCI6MTYyNDM1NDQ0MiwiUGFzc3dvcmQiOiIkMmEkMDUkQmRYNG4zVDEySnlNd0hHSWo4Zlk4LjFabkdrZG9sYXZRekgxcnU0L1dCTFF6Nk9GNk85SksiLCJVc2VybmFtZSI6InhtZW4ifQ.QTzTVVZcnw0FzkYOwK6B0_yp5RSo-UcUdmE1kFoGahfRwULLpgJ4MQeODXQSQF6V"
+}

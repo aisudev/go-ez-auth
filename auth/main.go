@@ -60,6 +60,42 @@ func main() {
 
 	})
 
+	// *Verify AccessToken
+	e.POST("/auth/access", func(c echo.Context) error {
+		var reqMap map[string]interface{}
+		var resMap map[string]interface{}
+		var err error
+
+		if err = c.Bind(&reqMap); err != nil {
+			return c.String(http.StatusBadRequest, err.Error())
+		}
+
+		if resMap, err = handler.AccessUser(reqMap["accessToken"].(string)); err != nil {
+			return c.String(http.StatusBadRequest, err.Error())
+		}
+
+		return c.JSON(http.StatusOK, resMap)
+
+	})
+
+	// *Refresh Token
+	e.POST("/auth/refresh", func(c echo.Context) error {
+		var reqMap map[string]interface{}
+		var resMap map[string]interface{}
+		var err error
+
+		if err = c.Bind(&reqMap); err != nil {
+			return c.String(http.StatusBadRequest, err.Error())
+		}
+
+		if resMap, err = handler.RefreshUser(reqMap["refreshToken"].(string)); err != nil {
+			return c.String(http.StatusBadRequest, err.Error())
+		}
+
+		return c.JSON(http.StatusOK, resMap)
+
+	})
+
 	e.Start(":9898")
 }
 

@@ -2,7 +2,7 @@ POST http://localhost:9898/signup
 Content-Type: application/json
 
 {
-    "username":"xmen",
+    "username":"user",
     "password":"1234"
 }
 
@@ -11,7 +11,7 @@ POST http://localhost:9898/signin
 Content-Type: application/json
 
 {
-    "username":"xmen",
+    "username":"user",
     "password":"1234"
 }
 
@@ -20,7 +20,7 @@ POST http://localhost:9898/auth/access
 Content-Type: application/json
 
 {
-    "accessToken":"eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJFeHBpcmVBdCI6MTYyNDM1NDcxOCwiUGFzc3dvcmQiOiIkMmEkMDUkQmRYNG4zVDEySnlNd0hHSWo4Zlk4LjFabkdrZG9sYXZRekgxcnU0L1dCTFF6Nk9GNk85SksiLCJVc2VybmFtZSI6InhtZW4ifQ.luYN0Cmi9G4LyHMmPpYFNPbTgWybyqh_V9Oc-hkKP1_0VVN0Nx0R92DsEokCDsoU"
+    "accessToken":"eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJFeHBpcmVBdCI6MTYyNDM1Njc3NCwiUGFzc3dvcmQiOiIkMmEkMDUkT2laSFVLQ2w0ME4zMmJzNk9NUXNxdWx1WE5mSjdQdWhLU0tOS3Exc3BIaGR0bXl6OHU1UTYiLCJVc2VybmFtZSI6InVzZXIifQ.Fj5jjwZYnrIXBOdSIx574ENt_kzNWg6eqe31ViGIe4Xc4in-VTGnaQ6jByyR1-lg"
 }
 
 ###
@@ -28,5 +28,5 @@ POST http://localhost:9898/auth/refresh
 Content-Type: application/json
 
 {
-    "refreshToken":"eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJFeHBpcmVBdCI6MTYyNDM1NDQ0MiwiUGFzc3dvcmQiOiIkMmEkMDUkQmRYNG4zVDEySnlNd0hHSWo4Zlk4LjFabkdrZG9sYXZRekgxcnU0L1dCTFF6Nk9GNk85SksiLCJVc2VybmFtZSI6InhtZW4ifQ.QTzTVVZcnw0FzkYOwK6B0_yp5RSo-UcUdmE1kFoGahfRwULLpgJ4MQeODXQSQF6V"
+    "refreshToken":"eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJFeHBpcmVBdCI6MTYyNDM1NzM3NCwiUGFzc3dvcmQiOiIkMmEkMDUkT2laSFVLQ2w0ME4zMmJzNk9NUXNxdWx1WE5mSjdQdWhLU0tOS3Exc3BIaGR0bXl6OHU1UTYiLCJVc2VybmFtZSI6InVzZXIifQ.-Z_pQCuzPOby9ETq24uclLvywyqxbUZlSZGN1NbmpK-i1P0PZSNMKiC068awXTMb"
 }

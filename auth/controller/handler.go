@@ -2,8 +2,8 @@ package controller
 
 import (
 	"auth-api/domain"
+	"auth-api/utils"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -42,13 +42,14 @@ func (h *Handler) CreateUser(user *domain.User) error {
 	hashPassword, err := HashPassword(user.Password)
 
 	if err != nil {
-		fmt.Println("Error")
+		utils.Logger("", err)
 		return err
 	}
 
 	user.Password = hashPassword
 
 	if err := h.db.Create(&user).Error; err != nil {
+		utils.Logger("", err)
 		return err
 	}
 
@@ -61,26 +62,31 @@ func (h *Handler) GetUser(username, password string) (map[string]interface{}, er
 	var err error
 
 	if err = h.db.Where("username = ?", username).Find(&user).Error; err != nil {
+		utils.Logger("", err)
 		return nil, err
 	}
 
 	if err = ComparePassword(user.Password, password); err != nil {
+		utils.Logger("", err)
 		return nil, err
 	}
 
 	var accessToken *string
 	if accessToken, err = GenerateToken(user.Username, user.Password, time.Now().Add(time.Minute*5).Unix()); err != nil {
+		utils.Logger("", err)
 		return nil, err
 	}
 	user.AccessToken = *accessToken
 
 	var refreshToken *string
 	if refreshToken, err = GenerateToken(user.Username, user.Password, time.Now().Add(time.Minute*15).Unix()); err != nil {
+		utils.Logger("", err)
 		return nil, err
 	}
 	user.RefreshToken = *refreshToken
 
 	if err = h.db.Where("username = ?", user.Username).Updates(&user).Error; err != nil {
+		utils.Logger("", err)
 		return nil, err
 	}
 
@@ -93,6 +99,7 @@ func (h *Handler) GetUser(username, password string) (map[string]interface{}, er
 func (h *Handler) AccessUser(accessToken string) (map[string]interface{}, error) {
 
 	if _, err := VerifyToken(accessToken); err != nil {
+		utils.Logger("", err)
 		return map[string]interface{}{"isValid": false}, err
 	}
 
@@ -109,6 +116,7 @@ func (h *Handler) RefreshUser(refreshToken string) (map[string]interface{}, erro
 	var err error
 
 	if claims, err = VerifyToken(refreshToken); err != nil {
+		utils.Logger("", err)
 		return nil, err
 	}
 
@@ -118,11 +126,13 @@ func (h *Handler) RefreshUser(refreshToken string) (map[string]interface{}, erro
 
 	var accToken *string
 	if accToken, err = GenerateToken(claims.Username, claims.Password, time.Now().Add(time.Minute*5).Unix()); err != nil {
+		utils.Logger("", err)
 		return nil, err
 	}
 
 	var rfToken *string
 	if rfToken, err = GenerateToken(claims.Username, claims.Password, time.Now().Add(time.Minute*15).Unix()); err != nil {
+		utils.Logger("", err)
 		return nil, err
 	}
 
@@ -131,6 +141,8 @@ func (h *Handler) RefreshUser(refreshToken string) (map[string]interface{}, erro
 		Where("username = ?", claims.Username).
 		Updates(map[string]interface{}{"access_token": accToken, "refresh_token": rfToken}).
 		Error; err != nil {
+
+		utils.Logger("", err)
 
 		return nil, err
 	}

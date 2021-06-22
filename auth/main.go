@@ -39,7 +39,7 @@ func main() {
 			return c.JSON(http.StatusBadRequest, utils.Response(false, nil, nil, err))
 		}
 
-		return c.JSON(http.StatusBadRequest, utils.Response(true, nil, nil, nil))
+		return c.JSON(http.StatusOK, utils.Response(true, nil, nil, nil))
 	})
 
 	// *SignIn

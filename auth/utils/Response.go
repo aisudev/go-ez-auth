@@ -26,5 +26,5 @@ func Response(success bool, message *string, data interface{}, err error) map[st
 }
 
 func Logger(message string, err error) {
-	fmt.Printf("{\nmessage: %s\nerror: %s\n", message, err.Error())
+	fmt.Printf("--------------------------------\nmessage: %s\nerror: %s\n", message, err.Error())
 }

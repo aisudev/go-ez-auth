@@ -1,1 +1,7 @@
-GET http://localhost:9898/
+POST http://localhost:9898/signup
+Content-Type: application/json
+
+{
+    "username":"xmen",
+    "password":"1234"
+}

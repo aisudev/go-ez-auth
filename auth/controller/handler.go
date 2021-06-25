@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gofrs/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -15,7 +16,7 @@ var jwtKey = []byte("secret")
 
 type Claims struct {
 	Username string
-	Password string
+	Secret   string
 	ExpireAt int64
 	jwt.StandardClaims
 }
@@ -46,6 +47,7 @@ func (h *Handler) CreateUser(user *domain.User) error {
 		return err
 	}
 
+	user.UUID = GenerateUUID()
 	user.Password = hashPassword
 
 	if err := h.db.Create(&user).Error; err != nil {
@@ -79,13 +81,13 @@ func (h *Handler) GetUser(username, password string) (map[string]interface{}, er
 	user.AccessToken = *accessToken
 
 	var refreshToken *string
-	if refreshToken, err = GenerateToken(user.Username, user.Password, time.Now().Add(time.Minute*15).Unix()); err != nil {
+	if refreshToken, err = GenerateToken(user.Username, user.UUID.String(), time.Now().Add(time.Minute*15).Unix()); err != nil {
 		utils.Logger("", err)
 		return nil, err
 	}
 	user.RefreshToken = *refreshToken
 
-	if err = h.db.Where("username = ?", user.Username).Updates(&user).Error; err != nil {
+	if err = h.db.Where("UUID = ?", user.UUID).Updates(&user).Error; err != nil {
 		utils.Logger("", err)
 		return nil, err
 	}
@@ -125,13 +127,13 @@ func (h *Handler) RefreshUser(refreshToken string) (map[string]interface{}, erro
 	}
 
 	var accToken *string
-	if accToken, err = GenerateToken(claims.Username, claims.Password, time.Now().Add(time.Minute*5).Unix()); err != nil {
+	if accToken, err = GenerateToken(claims.Username, claims.Secret, time.Now().Add(time.Minute*5).Unix()); err != nil {
 		utils.Logger("", err)
 		return nil, err
 	}
 
 	var rfToken *string
-	if rfToken, err = GenerateToken(claims.Username, claims.Password, time.Now().Add(time.Minute*15).Unix()); err != nil {
+	if rfToken, err = GenerateToken(claims.Username, claims.Secret, time.Now().Add(time.Minute*15).Unix()); err != nil {
 		utils.Logger("", err)
 		return nil, err
 	}
@@ -150,6 +152,13 @@ func (h *Handler) RefreshUser(refreshToken string) (map[string]interface{}, erro
 	return map[string]interface{}{"access_token": accToken, "refresh_token": rfToken}, nil
 }
 
+// *UUID
+
+func GenerateUUID() uuid.UUID {
+	genUuid, _ := uuid.DefaultGenerator.NewV4()
+	return genUuid
+}
+
 // *FUNCTION HASH
 func HashPassword(password string) (string, error) {
 
@@ -164,13 +173,13 @@ func ComparePassword(hashPassword, password string) error {
 
 // *FUNCTION JWT
 
-func GenerateToken(username, password string, expire int64) (*string, error) {
+func GenerateToken(username, secret string, expire int64) (*string, error) {
 
 	token := jwt.New(jwt.SigningMethodHS384)
 
 	claims := token.Claims.(jwt.MapClaims)
 	claims["Username"] = username
-	claims["Password"] = password
+	claims["Secret"] = secret
 	claims["ExpireAt"] = expire
 
 	tkn, err := token.SignedString(jwtKey)
